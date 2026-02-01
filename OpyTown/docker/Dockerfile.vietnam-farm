@@ -15,8 +15,8 @@ ENV PATH="/venv/bin:$PATH"
 ENV PYTHONPATH="/app"
 
 WORKDIR /app
-COPY coffeeAGNTCY/coffee_agents/lungo/pyproject.toml coffeeAGNTCY/coffee_agents/lungo/uv.lock ./
+COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-editable
 
-COPY coffeeAGNTCY/coffee_agents/lungo/ .
+COPY . .
 CMD ["uv", "run", "python", "agents/farms/vietnam/farm_server.py"]

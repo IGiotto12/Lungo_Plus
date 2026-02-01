@@ -1,10 +1,11 @@
 services:
   brazil-farm-server:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.brazil-farm
+      context: .
+      dockerfile: docker/Dockerfile.brazil-farm
     image: ghcr.io/agntcy/coffee-agntcy/brazil-farm:latest
-    container_name: brazil-farm-server
+    depends_on:
+      - nats
     env_file:
       - .env
     environment:
@@ -19,10 +20,11 @@ services:
       - "9999:9999"
   colombia-farm-server:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.colombia-farm
+      context: .
+      dockerfile: docker/Dockerfile.colombia-farm
     image: ghcr.io/agntcy/coffee-agntcy/colombia-farm:latest
-    container_name: colombia-farm-server
+    depends_on:
+      - nats
     env_file:
       - .env
     environment:
@@ -39,10 +41,11 @@ services:
       - "9998:9998"
   vietnam-farm-server:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.vietnam-farm
+      context: .
+      dockerfile: docker/Dockerfile.vietnam-farm
     image: ghcr.io/agntcy/coffee-agntcy/vietnam-farm:latest
-    container_name: vietnam-farm-server
+    depends_on:
+      - nats
     env_file:
       - .env
     environment:
@@ -59,7 +62,6 @@ services:
       - "9997:9997"
   nats:
     image: nats:latest
-    container_name: lungo-nats
     ports:
       - "4222:4222"
       - "4223:4223"
@@ -68,9 +70,8 @@ services:
 
   slim:
     image: ghcr.io/agntcy/slim:0.6.1
-    container_name: lungo-slim
     ports:
-      - "46357:46357"
+      - "${SLIM_HOST_PORT:-46357}:46357"
     environment:
       - PASSWORD=${SLIM_GATEWAY_PASSWORD:-dummy_password}
       - CONFIG_PATH=/config.yaml
@@ -81,13 +82,14 @@ services:
   # auction supervisor App (farm client)
   auction-supervisor:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.auction-supervisor
+      context: .
+      dockerfile: docker/Dockerfile.auction-supervisor
     image: ghcr.io/agntcy/coffee-agntcy/auction-supervisor:latest
-    container_name: auction-supervisor
+    depends_on:
+      - nats
     volumes:
       # Mount local git metadata so /build/info can derive latest tag/date in dev
-      - ../../../.git:/app/.git:ro
+      - ../.git:/app/.git:ro
     env_file:
       - .env
     environment:
@@ -103,10 +105,9 @@ services:
 
   ui:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.ui
+      context: .
+      dockerfile: docker/Dockerfile.ui
     image: ghcr.io/agntcy/coffee-agntcy/lungo-ui:latest
-    container_name: lungo-ui
     environment:
       - VITE_EXCHANGE_APP_API_URL=http://127.0.0.1:8000
       - VITE_LOGISTICS_APP_API_URL=http://127.0.0.1:9090
@@ -118,10 +119,9 @@ services:
 
   weather-mcp-server:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.weather-mcp
+      context: .
+      dockerfile: docker/Dockerfile.weather-mcp
     image: ghcr.io/agntcy/coffee-agntcy/weather-mcp-server:latest
-    container_name: weather-mcp-server
     environment:
       - DEFAULT_MESSAGE_TRANSPORT=${DEFAULT_MESSAGE_TRANSPORT:-NATS}
       - TRANSPORT_SERVER_ENDPOINT=${TRANSPORT_SERVER_ENDPOINT:-nats://nats:4222}
@@ -129,10 +129,9 @@ services:
 
   payment-mcp-server:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.payment-mcp
+      context: .
+      dockerfile: docker/Dockerfile.payment-mcp
     image: ghcr.io/agntcy/coffee-agntcy/payment-mcp-server:latest
-    container_name: payment-mcp-server
     ports:
       - "8081:8081"
     environment:
@@ -144,7 +143,6 @@ services:
 
   clickhouse-server:
     image: clickhouse/clickhouse-server
-    container_name: lungo-clickhouse-server
     ports:
       - "9000:9000"
       - "8123:8123"
@@ -172,7 +170,6 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    container_name: lungo-otel-collector
     restart: unless-stopped
     ports:
       - "4317:4317"
@@ -186,7 +183,6 @@ services:
 
   grafana:
     image: grafana/grafana
-    container_name: grafana-lungo
     ports:
       - "3001:3000"
     environment:
@@ -205,10 +201,9 @@ services:
 
   logistics-shipper:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.logistics-shipper
+      context: .
+      dockerfile: docker/Dockerfile.logistics-shipper
     image: ghcr.io/agntcy/coffee-agntcy/logistics-shipper:latest
-    container_name: logistics-shipper
     environment:
       - DEFAULT_MESSAGE_TRANSPORT=SLIM # Do not change. SLIM is required for group conversation.
       - TRANSPORT_SERVER_ENDPOINT=http://slim:46357
@@ -219,10 +214,9 @@ services:
 
   logistics-accountant:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.logistics-accountant
+      context: .
+      dockerfile: docker/Dockerfile.logistics-accountant
     image: ghcr.io/agntcy/coffee-agntcy/logistics-accountant:latest
-    container_name: logistics-accountant
     environment:
       - DEFAULT_MESSAGE_TRANSPORT=SLIM # Do not change. SLIM is required for group conversation.
       - TRANSPORT_SERVER_ENDPOINT=http://slim:46357
@@ -233,10 +227,9 @@ services:
 
   logistics-farm:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.logistics-farm
+      context: .
+      dockerfile: docker/Dockerfile.logistics-farm
     image: ghcr.io/agntcy/coffee-agntcy/logistics-farm:latest
-    container_name: logistics-farm
     environment:
       - DEFAULT_MESSAGE_TRANSPORT=SLIM # Do not change. SLIM is required for group conversation.
       - TRANSPORT_SERVER_ENDPOINT=http://slim:46357
@@ -247,10 +240,9 @@ services:
 
   logistics-helpdesk:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.logistics-helpdesk
+      context: .
+      dockerfile: docker/Dockerfile.logistics-helpdesk
     image: ghcr.io/agntcy/coffee-agntcy/logistics-helpdesk:latest
-    container_name: logistics-helpdesk
     environment:
       - DEFAULT_MESSAGE_TRANSPORT=SLIM # Do not change. SLIM is required for group conversation.
       - TRANSPORT_SERVER_ENDPOINT=http://slim:46357
@@ -261,10 +253,9 @@ services:
 
   logistics-supervisor:
     build:
-      context: ../../..
-      dockerfile: coffeeAGNTCY/coffee_agents/lungo/docker/Dockerfile.logistics-supervisor
+      context: .
+      dockerfile: docker/Dockerfile.logistics-supervisor
     image: ghcr.io/agntcy/coffee-agntcy/logistics-supervisor:latest
-    container_name: logistics-supervisor
     env_file:
       - .env
     environment:
@@ -276,7 +267,6 @@ services:
 
   mce-api-layer:
     image: ghcr.io/agntcy/obs-api:0.1.1
-    container_name: lungo-mce-api-layer
     ports:
       - "8080:8080"
     environment:
@@ -301,7 +291,6 @@ services:
 
   metrics-computation-engine:
     image: ghcr.io/agntcy/mce:1.2.1
-    container_name: lungo-metrics-computation-engine
     ports:
       - "8001:8000"
     environment:
@@ -315,7 +304,6 @@ services:
 
   dir-api-server:
     image: ghcr.io/agntcy/dir-apiserver:v0.6.0
-    container_name: dir-api-server
     env_file:
       - ./config/docker/dir/apiserver.env
     ports:
@@ -336,7 +324,6 @@ services:
 
   dir-mcp-server:
     image: ghcr.io/agntcy/dir-ctl:latest
-    container_name: dir-mcp-server
     stdin_open: true
     tty: false
     command: ["mcp", "serve"]
@@ -349,7 +336,6 @@ services:
 
   zot:
     image: ghcr.io/project-zot/zot:v2.1.10
-    container_name: zot
     ports:
       - 5555:5000
     deploy:
@@ -365,7 +351,6 @@ services:
 
   oasf-translation-service:
     image: ghcr.io/agntcy/oasf-sdk:v0.0.14
-    container_name: oasf-translation-service
     ports:
       - "31234:31234"
     profiles:

@@ -1,0 +1,35 @@
+# Dependencies - never copy host node_modules or Python venv into image
+node_modules
+**/node_modules
+frontend/node_modules
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+*.swp
+*.swo
+
+# Build outputs and caches
+dist
+frontend/dist
+.next
+.npm
+*.log
+npm-debug.log*
+
+# Env files (use .env at runtime via compose, not in image)
+.env
+.env.*
+
+# Tests and docs (not needed in runtime image)
+tests
+**/tests
+docs
+*.md
+!frontend/README.md
