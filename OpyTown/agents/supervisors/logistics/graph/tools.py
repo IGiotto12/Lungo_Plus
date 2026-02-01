@@ -32,6 +32,8 @@ from config.config import (
   TRANSPORT_SERVER_ENDPOINT,
 )
 from common.logistics_states import LogisticsStatus
+from services.shared_memory import get_shared_memory
+from services.semantic_translator import get_semantic_translator
 
 logger = logging.getLogger("lungo.logistics.supervisor.tools")
 
@@ -68,6 +70,38 @@ async def create_order(farm: str, quantity: int, price: float) -> str:
   if not farm:
     return "No farm provided. Please specify a farm."
 
+  # Generate order ID
+  order_id = uuid.uuid4().hex[:12]
+  shared_memory = get_shared_memory()
+  
+  # Write initial order state to shared memory
+  shared_memory.update_order_state(
+    order_id=order_id,
+    state=LogisticsStatus.RECEIVED_ORDER.value,
+    agent_id="supervisor",
+    metadata={
+      "farm": farm,
+      "quantity": quantity,
+      "price": price,
+      "sender": "Supervisor",
+      "receiver": "Tatooine Farm",
+    }
+  )
+  
+  # Store order details in shared memory
+  shared_memory.write(
+    key=f"order_details_{order_id}",
+    value={
+      "order_id": order_id,
+      "farm": farm,
+      "quantity": quantity,
+      "price": price,
+      "state": LogisticsStatus.RECEIVED_ORDER.value,
+    },
+    agent_id="supervisor",
+    semantic_tags=["order", "logistics", "received_order", "coffee"],
+  )
+
   try:
     client = await factory.create_client(
       "A2A",
@@ -86,7 +120,7 @@ async def create_order(farm: str, quantity: int, price: float) -> str:
             Part(
               TextPart(
                 # Note the status must be included to trigger the logistic flow
-                text = f"{LogisticsStatus.RECEIVED_ORDER.value} | Supervisor -> Tatooine Farm: Create an order {uuid.uuid4().hex} with price {price} and quantity {quantity}."
+                text = f"{LogisticsStatus.RECEIVED_ORDER.value} | Supervisor -> Tatooine Farm: Create an order {order_id} with price {price} and quantity {quantity}."
               )
             )
           ],
@@ -172,6 +206,38 @@ async def create_order_streaming(farm: str, quantity: int, price: float):
     yield "No farm provided. Please specify a farm."
     return
 
+  # Generate order ID
+  order_id = str(uuid4())
+  shared_memory = get_shared_memory()
+  
+  # Write initial order state to shared memory
+  shared_memory.update_order_state(
+    order_id=order_id,
+    state=LogisticsStatus.RECEIVED_ORDER.value,
+    agent_id="supervisor",
+    metadata={
+      "farm": farm,
+      "quantity": quantity,
+      "price": price,
+      "sender": "Supervisor",
+      "receiver": "Tatooine Farm",
+    }
+  )
+  
+  # Store order details in shared memory
+  shared_memory.write(
+    key=f"order_details_{order_id}",
+    value={
+      "order_id": order_id,
+      "farm": farm,
+      "quantity": quantity,
+      "price": price,
+      "state": LogisticsStatus.RECEIVED_ORDER.value,
+    },
+    agent_id="supervisor",
+    semantic_tags=["order", "logistics", "received_order", "coffee"],
+  )
+
   try:
     client = await factory.create_client(
       "A2A",
@@ -179,7 +245,6 @@ async def create_order_streaming(farm: str, quantity: int, price: float):
       agent_topic=A2AProtocol.create_agent_topic(SHIPPER_CARD),
       transport=transport,
     )
-    order_id=str(uuid4())
     logger.debug(f"Sending order {order_id} to agent: {farm}")
 
     request = SendMessageRequest(
@@ -225,6 +290,15 @@ async def create_order_streaming(farm: str, quantity: int, price: float):
       "state": "RECEIVED_ORDER",
       "timestamp": datetime.now(timezone.utc).isoformat()
     }
+    
+    # Store initial message in shared memory
+    shared_memory.write(
+      key=f"message_{order_id}",
+      value=initial_message,
+      agent_id="supervisor",
+      semantic_tags=["order", "logistics", "received_order", "message"],
+    )
+    
     yield initial_message
     
     responses = client.start_streaming_groupchat(
@@ -242,6 +316,28 @@ async def create_order_streaming(farm: str, quantity: int, price: float):
         # Parse the response into structured format
         parsed_event = _parse_order_event(response)
         if parsed_event:
+          # Write parsed event to shared memory
+          event_order_id = parsed_event.get("order_id", order_id)
+          shared_memory.write(
+            key=f"message_{event_order_id}",
+            value=parsed_event,
+            agent_id=parsed_event.get("sender", "unknown").lower().replace(" ", "_"),
+            semantic_tags=["order", "logistics", parsed_event.get("state", "").lower(), "message"],
+          )
+          
+          # Update order state if state changed
+          if parsed_event.get("state"):
+            shared_memory.update_order_state(
+              order_id=event_order_id,
+              state=parsed_event["state"],
+              agent_id=parsed_event.get("sender", "unknown").lower().replace(" ", "_"),
+              metadata={
+                "sender": parsed_event.get("sender"),
+                "receiver": parsed_event.get("receiver"),
+                "message": parsed_event.get("message"),
+              }
+            )
+          
           # Add delay to simulate streaming chunks
           await asyncio.sleep(1.0)
           yield parsed_event

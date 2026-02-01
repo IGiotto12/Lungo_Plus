@@ -22,6 +22,7 @@ import {
   useGroupCurrentOrderId,
   useGroupIsComplete,
 } from "@/stores/groupStreamingStore"
+import { NODE_IDS, EDGE_IDS } from "@/utils/const"
 
 const buildSenderToNodeMap = (graphConfig: any): Record<string, string> => {
   if (!graphConfig?.nodes) return {}
@@ -154,8 +155,23 @@ const GroupCommunicationFeed: React.FC<GroupCommunicationFeedProps> = ({
         senderToNodeMap[lastEvent.sender] ||
         senderToNodeMap[lastEvent.sender.toLowerCase()]
 
+      // Find shared memory node ID
+      const sharedMemoryNodeId = graphConfig.nodes?.find(
+        (node: any) => node.id === NODE_IDS.SHARED_MEMORY
+      )?.id
+
       if (senderNodeId) {
+        // Highlight the sender agent node
         onSenderHighlight(senderNodeId)
+
+        // Highlight shared memory node after a short delay (agents write/read from shared memory)
+        // The edges will be automatically highlighted by updateStyle when both nodes are active
+        if (sharedMemoryNodeId) {
+          const memoryTimeoutId = window.setTimeout(() => {
+            onSenderHighlight(sharedMemoryNodeId)
+          }, 300) // Delay to show shared memory interaction after agent action
+          highlightTimeoutsRef.current.push(memoryTimeoutId)
+        }
 
         if (lastEvent.sender === "Supervisor") {
           highlightTimeoutsRef.current.forEach(clearTimeout)
@@ -168,6 +184,15 @@ const GroupCommunicationFeed: React.FC<GroupCommunicationFeedProps> = ({
 
             const timeoutId = window.setTimeout(() => {
               onSenderHighlight(nodeIds[startIndex])
+              
+              // Also highlight shared memory when each agent is highlighted
+              if (sharedMemoryNodeId) {
+                const memoryTimeoutId = window.setTimeout(() => {
+                  onSenderHighlight(sharedMemoryNodeId)
+                }, 300)
+                highlightTimeoutsRef.current.push(memoryTimeoutId)
+              }
+              
               highlightAgents(nodeIds, startIndex + 1)
             }, 100)
 

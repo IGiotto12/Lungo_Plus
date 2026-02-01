@@ -251,9 +251,17 @@ const MainArea: React.FC<MainAreaProps> = ({
 
       setTimeout(() => {
         setEdges((edges) =>
-          edges.map((edge) =>
-            edge.id === id ? { ...edge, data: { ...edge.data, active } } : edge,
-          ),
+          edges.map((edge) => {
+            // Highlight edges connected to the node
+            if (edge.source === id || edge.target === id) {
+              return { ...edge, data: { ...edge.data, active } }
+            }
+            // Also check by edge ID
+            if (edge.id === id) {
+              return { ...edge, data: { ...edge.data, active } }
+            }
+            return edge
+          }),
         )
       }, 10)
     },
@@ -331,7 +339,7 @@ const MainArea: React.FC<MainAreaProps> = ({
   const onPaneClick = modalPaneClick
 
   return (
-    <div className="bg-primary-bg order-1 flex h-full w-full flex-none flex-grow flex-col items-start self-stretch p-0">
+    <div className="bg-primary-bg order-1 flex h-full w-full flex-none flex-grow flex-col items-start self-stretch p-0" style={{ minHeight: '400px' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

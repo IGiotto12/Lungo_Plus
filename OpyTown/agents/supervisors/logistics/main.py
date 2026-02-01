@@ -22,6 +22,9 @@ from agents.logistics.shipper.card import AGENT_CARD  # assuming similar structu
 from config.config import DEFAULT_MESSAGE_TRANSPORT, TRANSPORT_SERVER_ENDPOINT
 from config.logging_config import setup_logging
 from pathlib import Path
+from services.shared_memory import get_shared_memory
+from services.semantic_translator import get_semantic_translator
+from typing import Optional, List, Dict, Any
 
 setup_logging()
 logger = logging.getLogger("lungo.logistics.supervisor.main")
@@ -178,6 +181,187 @@ async def get_prompts(pattern: str = "default"):
   except Exception as e:
     logger.error(f"Unexpected error while reading prompts: {str(e)}")
     raise HTTPException(status_code=500, detail="An unexpected error occurred while reading prompts.")
+
+
+# --- Shared Memory API Endpoints ---
+
+class WriteMemoryRequest(BaseModel):
+    key: str
+    value: Any
+    agent_id: str
+    semantic_tags: Optional[List[str]] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class QueryMemoryRequest(BaseModel):
+    semantic_tags: List[str]
+    agent_id: Optional[str] = None
+    limit: int = 10
+
+
+@app.post("/shared-memory/write")
+async def write_to_shared_memory(request: WriteMemoryRequest):
+    """
+    Write an entry to shared memory.
+    
+    Args:
+        request: WriteMemoryRequest with key, value, agent_id, and optional tags/metadata
+        
+    Returns:
+        dict: Success message and entry details
+    """
+    try:
+        shared_memory = get_shared_memory()
+        entry = shared_memory.write(
+            key=request.key,
+            value=request.value,
+            agent_id=request.agent_id,
+            semantic_tags=request.semantic_tags,
+            metadata=request.metadata,
+        )
+        return {
+            "status": "success",
+            "entry": entry.dict(),
+        }
+    except Exception as e:
+        logger.error(f"Error writing to shared memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to write to shared memory: {str(e)}")
+
+
+@app.get("/shared-memory/read/{key}")
+async def read_from_shared_memory(
+    key: str,
+    agent_id: Optional[str] = None,
+    latest_only: bool = True,
+):
+    """
+    Read an entry from shared memory.
+    
+    Args:
+        key: Memory key to read
+        agent_id: Optional agent ID filter
+        latest_only: If True, return only the latest entry
+        
+    Returns:
+        dict: The value(s) stored at the key
+    """
+    try:
+        shared_memory = get_shared_memory()
+        value = shared_memory.read(
+            key=key,
+            agent_id=agent_id,
+            latest_only=latest_only,
+        )
+        if value is None:
+            raise HTTPException(status_code=404, detail=f"Key '{key}' not found in shared memory")
+        return {
+            "key": key,
+            "value": value,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reading from shared memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to read from shared memory: {str(e)}")
+
+
+@app.post("/shared-memory/query")
+async def query_shared_memory(request: QueryMemoryRequest):
+    """
+    Query shared memory by semantic tags.
+    
+    Args:
+        request: QueryMemoryRequest with semantic_tags, optional agent_id, and limit
+        
+    Returns:
+        dict: List of matching memory entries
+    """
+    try:
+        shared_memory = get_shared_memory()
+        results = shared_memory.query(
+            semantic_tags=request.semantic_tags,
+            agent_id=request.agent_id,
+            limit=request.limit,
+        )
+        return {
+            "count": len(results),
+            "entries": [entry.dict() for entry in results],
+        }
+    except Exception as e:
+        logger.error(f"Error querying shared memory: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to query shared memory: {str(e)}")
+
+
+@app.get("/shared-memory/order/{order_id}")
+async def get_order_state(order_id: str):
+    """
+    Get the current state of an order from shared memory.
+    
+    Args:
+        order_id: The order ID
+        
+    Returns:
+        dict: Order state information
+    """
+    try:
+        shared_memory = get_shared_memory()
+        state = shared_memory.get_order_state(order_id)
+        if state is None:
+            raise HTTPException(status_code=404, detail=f"Order '{order_id}' not found in shared memory")
+        return state
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting order state: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get order state: {str(e)}")
+
+
+@app.get("/shared-memory/orders")
+async def get_all_orders():
+    """
+    Get all order states from shared memory.
+    
+    Returns:
+        dict: List of all order states
+    """
+    try:
+        shared_memory = get_shared_memory()
+        orders = shared_memory.get_all_orders()
+        return {
+            "count": len(orders),
+            "orders": orders,
+        }
+    except Exception as e:
+        logger.error(f"Error getting all orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get all orders: {str(e)}")
+
+
+@app.post("/shared-memory/semantic-search")
+async def semantic_search(query: str, agent_context: Optional[str] = None):
+    """
+    Perform semantic search on shared memory.
+    
+    Args:
+        query: Natural language query
+        agent_context: Optional agent ID for context-aware matching
+        
+    Returns:
+        dict: List of matching memory entries
+    """
+    try:
+        translator = get_semantic_translator()
+        results = translator.find_semantic_matches(
+            query=query,
+            agent_context=agent_context,
+        )
+        return {
+            "query": query,
+            "count": len(results),
+            "entries": [entry.dict() for entry in results],
+        }
+    except Exception as e:
+        logger.error(f"Error performing semantic search: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to perform semantic search: {str(e)}")
 
 if __name__ == "__main__":
   uvicorn.run("main:app", host="0.0.0.0", port=9090, reload=True)

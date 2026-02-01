@@ -11,18 +11,19 @@ export const MAP_HEIGHT = MAP_ROWS * COLLISION_TILE_SIZE // 1024
 
 // Collision grid based on generated town layout
 // Buildings AND their fences are solid
-// Only cobblestone paths and open grass areas are walkable
+// Green areas (grass) are NON-WALKABLE (1)
+// Only cobblestone paths are walkable (0)
 
 export const COLLISION_MAP: number[] = [
     // Row 0-1: Top border and edge
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
-    // Row 2-5: Farm area (left) with fence, open path, warehouse (right) with fence
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    // Row 2-5: Farm area (left) with fence, green areas non-walkable, warehouse (right) with fence
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 
     // Row 6-9: Main horizontal road (fully walkable)
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -66,11 +67,13 @@ export const COLLISION_MAP: number[] = [
 ]
 
 // NPC positions on walkable paths
+// Farm NPCs positioned in top-left farm area, supervisor nearby
 export const NPC_SPAWN_POINTS = {
-    supervisor: { x: 512, y: 288, name: "Supervisor" },   // Top center on main road
-    worker: { x: 192, y: 512, name: "Worker" },           // Left side path
-    barista: { x: 832, y: 512, name: "Barista" },         // Right side path
+    supervisor: { x: 128, y: 256, name: "Coffee Buyer" },   // Supervisor near farms (interactable)
+    brazil_farm: { x: 96, y: 224, name: "Brazil Farm" },     // Top-left farm area
+    colombia_farm: { x: 160, y: 224, name: "Colombia Farm" }, // Top-left farm area
+    vietnam_farm: { x: 224, y: 224, name: "Vietnam Farm" },  // Top-left farm area
 }
 
-// Player spawn point
-export const PLAYER_SPAWN = { x: 512, y: 480 }
+// Player spawn point - positioned near farm area for easy access
+export const PLAYER_SPAWN = { x: 192, y: 320 }

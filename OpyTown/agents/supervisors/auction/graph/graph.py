@@ -743,16 +743,25 @@ class ExchangeGraph:
                                 if not line:
                                     continue
                                 
+                                # Skip market analysis bid lines (they contain "Score" and are part of Market Agent Analysis)
+                                if "Score" in line and ("|" in line or "$" in line):
+                                    logger.debug(f"Skipping market analysis bid line: {line[:80]}...")
+                                    continue
+                                
                                 # Look for lines starting with farm names (with or without markdown)
+                                # Only match lines that contain status indicators (✓, ✗, ⏱, 🔒) - these are farm availability responses
                                 for farm in ['Brazil', 'Colombia', 'Vietnam']:
                                     # Match patterns like:
                                     # "Brazil: ✓ Available - ..."
                                     # "- **Brazil**: ✓ Available - ..."
                                     # "**Brazil**: ✓ Available - ..."
+                                    # But NOT market analysis lines like "Brazil: Score 1.036 | $0.50/lb..."
                                     pattern = rf'^(?:-?\s*)?\*\*?{farm}\*\*?:?\s*([✓✗⏱🔒].*?)(?=\n\*\*?(?:Brazil|Colombia|Vietnam)|$)'
                                     match = re.search(pattern, line, re.IGNORECASE)
                                     
-                                    if match or line.startswith(farm + ':') or line.startswith('**' + farm + '**:') or line.startswith('- **' + farm + '**:'):
+                                    # Only match if line contains status indicators (farm availability responses)
+                                    # and does NOT contain "Score" (which indicates market analysis)
+                                    if (match or (line.startswith(farm + ':') and any(indicator in line for indicator in ['✓', '✗', '⏱', '🔒']))) and "Score" not in line:
                                         # Clean up the line - remove markdown
                                         clean_line = re.sub(r'\*\*?', '', line).strip()
                                         

@@ -314,25 +314,27 @@ const App: React.FC = () => {
           )}
 
           {viewMode === "game_view" ? (
-            <div className="relative h-full w-full bg-black">
-              <GameView
-                selectedPattern={selectedPattern}
-                onPatternChange={handlePatternChange}
-              />
-              {/* Floating Exit Button for Game View */}
-              <div className="absolute top-4 right-4 z-50">
-                <button
-                  onClick={() => setViewMode("agent_ui")}
-                  className="rounded-md bg-action-background px-4 py-2 text-sm font-medium text-white shadow-lg hover:bg-action-background/90 transition-colors border border-white/10"
-                >
-                  Exit Game View
-                </button>
+            <div className="flex items-center justify-center h-full w-full bg-primary-bg">
+              <div className="relative bg-black" style={{ width: '1200px', height: '900px' }}>
+                <GameView
+                  selectedPattern={selectedPattern}
+                  onPatternChange={handlePatternChange}
+                />
+                {/* Floating Exit Button for Game View */}
+                <div className="absolute top-4 right-4 z-50">
+                  <button
+                    onClick={() => setViewMode("agent_ui")}
+                    className="rounded-md bg-action-background px-4 py-2 text-sm font-medium text-white shadow-lg hover:bg-action-background/90 transition-colors border border-white/10"
+                  >
+                    Exit Game View
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
             <div className="flex flex-1 flex-col border-l border-action-background bg-app-background">
-              <div className="relative flex-grow">
-                <div className="relative flex-grow">
+              <div className="relative flex-grow" style={{ minHeight: '400px' }}>
+                <div className="relative flex-grow h-full">
                   <MainArea
                     pattern={selectedPattern}
                     buttonClicked={buttonClicked}

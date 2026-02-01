@@ -85,8 +85,8 @@ const GameView: React.FC<GameViewProps> = ({
         // World setup - uses CollisionMap data
         mapRef.current = new TileMap()
 
-        // Player setup at spawn point (center of map on walkable path)
-        playerRef.current = new Player(512, 480)
+        // Player setup at spawn point (near farm area for easy access)
+        playerRef.current = new Player(192, 320)
 
         // Camera setup with world dimensions from map
         cameraRef.current = new Camera(
@@ -96,33 +96,16 @@ const GameView: React.FC<GameViewProps> = ({
             mapRef.current.worldHeight
         )
 
-        // NPC setup - Supervisor is the main interactable (Auction Agent Buyer)
-        npcsRef.current = [
-            new NPC({
-                id: "supervisor",
-                name: "Coffee Buyer",
-                pattern: PATTERNS.PUBLISH_SUBSCRIBE, // Auction Agent Buyer pattern
-                x: 512,
-                y: 288,  // Top center on main road
-                spriteKey: "npc_supervisor",
-            }),
-            new NPC({
-                id: "worker",
-                name: "Worker",
-                pattern: PATTERNS.PUBLISH_SUBSCRIBE,
-                x: 160,
-                y: 512,  // Left side path
-                spriteKey: "npc_worker",
-            }),
-            new NPC({
-                id: "barista",
-                name: "Barista",
-                pattern: PATTERNS.SLIM_A2A,
-                x: 864,
-                y: 512,  // Right side path
-                spriteKey: "npc_barista",
-            }),
+        // NPC setup - Coffee buying workflow
+        // Only Supervisor is needed (interactable)
+        // Farm labels will be rendered as text on the background
+        const npcSpawns = [
+            { id: "supervisor", name: "Coffee Buyer", pattern: PATTERNS.PUBLISH_SUBSCRIBE, x: 378, y: 256, spriteKey: "npc_supervisor" },
         ]
+
+        npcsRef.current = npcSpawns
+            .filter(spawn => mapRef.current?.isWalkable(spawn.x, spawn.y))
+            .map(spawn => new NPC(spawn))
 
         // Renderer setup
         const ctx = canvasRef.current.getContext("2d")
@@ -198,8 +181,12 @@ const GameView: React.FC<GameViewProps> = ({
             if (containerRef.current && canvasRef.current && rendererRef.current && cameraRef.current) {
                 const w = containerRef.current.clientWidth
                 const h = containerRef.current.clientHeight
+                
+                // Set canvas size attributes
                 canvasRef.current.width = w
                 canvasRef.current.height = h
+                
+                // Update renderer and camera
                 rendererRef.current.setSize(w, h)
                 cameraRef.current.resize(w, h)
 
@@ -209,13 +196,25 @@ const GameView: React.FC<GameViewProps> = ({
             }
         }
 
+        // Use ResizeObserver for better container size tracking
+        const resizeObserver = new ResizeObserver(() => {
+            handleResize()
+        })
+
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current)
+        }
+
+        // Also listen to window resize as fallback
         window.addEventListener("resize", handleResize)
+        
         // Initial resize to fit
         handleResize()
 
         return () => {
             loopRef.current?.stop()
             inputRef.current?.destroy()
+            resizeObserver.disconnect()
             window.removeEventListener("resize", handleResize)
         }
     }, []) // Empty dependency array ensures this effect runs only once
@@ -225,11 +224,11 @@ const GameView: React.FC<GameViewProps> = ({
     }, [])
 
     return (
-        <div ref={containerRef} className="h-full w-full overflow-hidden bg-black relative">
+        <div ref={containerRef} className="h-full w-full overflow-hidden bg-black relative" style={{ minHeight: 0 }}>
             <canvas
                 ref={canvasRef}
-                className="block"
-                style={{ imageRendering: "pixelated" }}
+                className="block w-full h-full"
+                style={{ imageRendering: "pixelated", display: "block" }}
             />
             {/* UI Overlay Layer */}
             <div className="absolute top-4 left-4 text-white pointer-events-none opacity-70 font-mono text-sm bg-black/50 p-2 rounded">

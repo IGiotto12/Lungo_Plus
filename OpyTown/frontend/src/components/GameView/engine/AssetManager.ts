@@ -1,6 +1,6 @@
 // Static imports for Vite to handle properly
 import playersSheet from "@/assets/game_fig/players.png"
-import npcSheet from "@/assets/game_fig/npc.png"
+import supervisorSheet from "@/assets/game_fig/supervisor.png"
 import styleAnchor from "@/assets/game_fig/style_anchor.png"
 import townBackground from "@/assets/game_fig/town_background.png"
 import chatBubble from "@/assets/game_fig/chat_bubble.png"
@@ -10,7 +10,7 @@ import { MANIFEST, getSpriteRect } from "@/assets/manifest"
 // Map sheet names to imported URLs
 const SHEET_URLS: Record<string, string> = {
     players: playersSheet,
-    npc: npcSheet,
+    supervisor: supervisorSheet,
     style_anchor: styleAnchor,
     town_background: townBackground,
     chat_bubble: chatBubble,

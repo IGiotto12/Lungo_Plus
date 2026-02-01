@@ -37,4 +37,9 @@ export class TileMap {
 
         return this.tiles[tileX + tileY * this.width]
     }
+
+    // Check if a position is walkable (tile value is 0)
+    public isWalkable(x: number, y: number): boolean {
+        return !this.isSolid(x, y)
+    }
 }

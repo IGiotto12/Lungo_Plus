@@ -15,6 +15,8 @@ from common.logistics_states import (
     build_transition_message,
     ensure_order_id,
 )
+from services.shared_memory import get_shared_memory
+from services.semantic_translator import get_semantic_translator
 
 logger = logging.getLogger("lungo.accountant_agent.agent")
 
@@ -41,6 +43,8 @@ class AccountantAgent:
         - CUSTOMS_CLEARANCE -> PAYMENT_COMPLETE
         Ignores all other inputs.
         """
+        self.shared_memory = get_shared_memory()
+        self.semantic_translator = get_semantic_translator()
         self.app = self._build_graph()
 
     # --- Node Definition ---
@@ -63,6 +67,46 @@ class AccountantAgent:
 
         if status is LogisticsStatus.CUSTOMS_CLEARANCE:
             next_status = LogisticsStatus.PAYMENT_COMPLETE
+            
+            # Read previous state from shared memory
+            prev_state = self.shared_memory.get_order_state(order_id)
+            if prev_state:
+                logger.info(f"Accountant read order state from shared memory: {prev_state}")
+            
+            # Query shared memory for related order information
+            related_entries = self.semantic_translator.find_semantic_matches(
+                query=f"order {order_id} customs clearance",
+                agent_context="accountant_agent",
+            )
+            if related_entries:
+                logger.info(f"Accountant found {len(related_entries)} related entries in shared memory")
+            
+            # Write to shared memory
+            self.shared_memory.update_order_state(
+                order_id=order_id,
+                state=next_status.value,
+                agent_id="accountant_agent",
+                metadata={
+                    "sender": "Accountant",
+                    "receiver": "Shipper",
+                    "details": "Payment verified and captured",
+                }
+            )
+            
+            # Store message in shared memory
+            self.shared_memory.write(
+                key=f"message_{order_id}",
+                value={
+                    "order_id": order_id,
+                    "sender": "Accountant",
+                    "receiver": "Shipper",
+                    "state": next_status.value,
+                    "message": raw,
+                },
+                agent_id="accountant_agent",
+                semantic_tags=["order", "payment", "transaction", "logistics"],
+            )
+            
             msg = build_transition_message(
                 order_id=order_id,
                 sender="Accountant",

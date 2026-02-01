@@ -15,6 +15,8 @@ from common.logistics_states import (
     build_transition_message,
     ensure_order_id,
 )
+from services.shared_memory import get_shared_memory
+from services.semantic_translator import get_semantic_translator
 
 logger = logging.getLogger("lungo.shipper_agent.agent")
 
@@ -41,6 +43,8 @@ class ShipperAgent:
         - HANDOVER_TO_SHIPPER -> CUSTOMS_CLEARANCE
         - PAYMENT_COMPLETE -> DELIVERED
         """
+        self.shared_memory = get_shared_memory()
+        self.semantic_translator = get_semantic_translator()
         self.app = self._build_graph()
 
     # --- Node Definition ---
@@ -59,6 +63,38 @@ class ShipperAgent:
 
         if status is LogisticsStatus.HANDOVER_TO_SHIPPER:
             next_status = LogisticsStatus.CUSTOMS_CLEARANCE
+            
+            # Read previous state from shared memory
+            prev_state = self.shared_memory.get_order_state(order_id)
+            if prev_state:
+                logger.info(f"Shipper read order state from shared memory: {prev_state}")
+            
+            # Write to shared memory
+            self.shared_memory.update_order_state(
+                order_id=order_id,
+                state=next_status.value,
+                agent_id="shipper_agent",
+                metadata={
+                    "sender": "Shipper",
+                    "receiver": "Accountant",
+                    "details": "Customs docs validated and cleared",
+                }
+            )
+            
+            # Store message in shared memory
+            self.shared_memory.write(
+                key=f"message_{order_id}",
+                value={
+                    "order_id": order_id,
+                    "sender": "Shipper",
+                    "receiver": "Accountant",
+                    "state": next_status.value,
+                    "message": raw,
+                },
+                agent_id="shipper_agent",
+                semantic_tags=["order", "customs", "clearance", "logistics"],
+            )
+            
             msg = build_transition_message(
                 order_id=order_id,
                 sender="Shipper",
@@ -70,6 +106,33 @@ class ShipperAgent:
 
         if status is LogisticsStatus.PAYMENT_COMPLETE:
             next_status = LogisticsStatus.DELIVERED
+            
+            # Write to shared memory
+            self.shared_memory.update_order_state(
+                order_id=order_id,
+                state=next_status.value,
+                agent_id="shipper_agent",
+                metadata={
+                    "sender": "Shipper",
+                    "receiver": "Supervisor",
+                    "details": "Final handoff completed",
+                }
+            )
+            
+            # Store message in shared memory
+            self.shared_memory.write(
+                key=f"message_{order_id}",
+                value={
+                    "order_id": order_id,
+                    "sender": "Shipper",
+                    "receiver": "Supervisor",
+                    "state": next_status.value,
+                    "message": raw,
+                },
+                agent_id="shipper_agent",
+                semantic_tags=["order", "delivered", "completed", "logistics"],
+            )
+            
             msg = build_transition_message(
                 order_id=order_id,
                 sender="Shipper",

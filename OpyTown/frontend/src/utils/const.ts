@@ -35,6 +35,7 @@ export const NODE_IDS = {
   WEATHER_MCP: "6",
   PAYMENT_MCP: "7",
   LOGISTICS_GROUP: "logistics-group",
+  SHARED_MEMORY: "8",
 } as const
 
 export const EDGE_IDS = {
@@ -51,6 +52,14 @@ export const EDGE_IDS = {
   FARM_TO_TRANSPORT: "3-2",
   TRANSPORT_TO_SHIPPER: "2-4",
   TRANSPORT_TO_ACCOUNTANT: "2-5",
+  SUPERVISOR_TO_MEMORY: "1-8",
+  FARM_TO_MEMORY: "3-8",
+  SHIPPER_TO_MEMORY: "4-8",
+  ACCOUNTANT_TO_MEMORY: "5-8",
+  MEMORY_TO_SUPERVISOR: "8-1",
+  MEMORY_TO_FARM: "8-3",
+  MEMORY_TO_SHIPPER: "8-4",
+  MEMORY_TO_ACCOUNTANT: "8-5",
 } as const
 
 export const NODE_TYPES = {

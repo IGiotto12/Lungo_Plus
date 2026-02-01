@@ -11,8 +11,10 @@ export interface NPCDefinition {
 
 export class NPC {
     def: NPCDefinition
-    width: number = 42   // Display width (125 scaled down)
-    height: number = 100 // Display height (300 scaled down)
+    // Display size: 112×112 (2x scale of 56×56 source image to match player size)
+    // Player model: 100×70 pixels display size
+    width: number = 112   // Display width (2x scaled from 56px source)
+    height: number = 112  // Display height (2x scaled from 56px source)
 
     // Chat state
     isChatting: boolean = false

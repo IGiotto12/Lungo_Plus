@@ -1,6 +1,6 @@
 // Sprite sheet specifications
 // Players sheet: 2000 × 1412 px, 4 cols × 4 rows = 500 × 353 per frame
-// NPC sheet: Specific pixel coordinates (not grid-based)
+// Supervisor sheet: 56 × 56 px single sprite (displayed at 112×112, 2x scale)
 
 export const FRAME_SIZE = 32 // Default for tilesets
 
@@ -45,7 +45,7 @@ export function getSpriteRect(def: SpriteDefinition): { x: number; y: number; w:
 
 export const SPRITE_SHEETS = {
     players: "players.png",
-    npc: "npc.png",
+    supervisor: "supervisor.png",
     style_anchor: "style_anchor.png",
     chat_bubble: "chat_bubble.png",
 }
@@ -80,10 +80,9 @@ export const MANIFEST: Record<string, SpriteDefinition> = {
     "player_idle": { sheet: "players", row: 0, col: 0 },
 
     // === NPC SPRITES ===
-    // Direct pixel coordinates (x, y) with size 125×300
-    "npc_supervisor": { sheet: "npc", x: 105, y: 1287, w: 125, h: 300 },
-    "npc_worker": { sheet: "npc", x: 800, y: 1287, w: 125, h: 300 },
-    "npc_barista": { sheet: "npc", x: 1490, y: 1287, w: 125, h: 300 },
+    // Supervisor NPC: Source image 56×56 pixels, displayed at 112×112 (2x scale to match player size)
+    // Player model: 100×70 pixels display size
+    "npc_supervisor": { sheet: "supervisor", x: 0, y: 0, w: 56, h: 56 },
 
     // === UI ===
     "chat_bubble": { sheet: "chat_bubble", x: 0, y: 0, w: 246, h: 236 },

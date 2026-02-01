@@ -43,6 +43,9 @@ export class Renderer {
         // Optional: Debug collision grid overlay (uncomment to debug)
         // this.drawCollisionDebug(map)
 
+        // Draw Farm Labels (text on background)
+        this.drawFarmLabels()
+
         // Draw NPCs
         npcs.forEach(npc => {
             const spriteKey = npc.def.spriteKey || "npc_supervisor"
@@ -61,36 +64,36 @@ export class Renderer {
                 this.ctx.fillRect(npc.def.x - npc.width / 2, npc.def.y - npc.height / 2, npc.width, npc.height)
             }
 
-            // Chat bubble when chatting
-            if (npc.isChatting) {
-                const bubbleImg = assets?.getImage("chat_bubble")
-                const bubbleWidth = 60
-                const bubbleHeight = 58 // 246:236 ratio
-                const bubbleX = npc.def.x - bubbleWidth / 2
-                const bubbleY = npc.def.y - npc.height / 2 - bubbleHeight - 10
+            // Chat bubble when chatting (disabled for now)
+            // if (npc.isChatting) {
+            //     const bubbleImg = assets?.getImage("chat_bubble")
+            //     const bubbleWidth = 60
+            //     const bubbleHeight = 58 // 246:236 ratio
+            //     const bubbleX = npc.def.x - bubbleWidth / 2
+            //     const bubbleY = npc.def.y - npc.height / 2 - bubbleHeight - 10
 
-                if (bubbleImg) {
-                    this.ctx.drawImage(bubbleImg, bubbleX, bubbleY, bubbleWidth, bubbleHeight)
-                    // Draw "..." text inside bubble
-                    this.ctx.fillStyle = "#4a3520"
-                    this.ctx.font = "bold 18px serif"
-                    this.ctx.textAlign = "center"
-                    this.ctx.fillText("...", npc.def.x, bubbleY + bubbleHeight / 2 + 4)
-                } else {
-                    // Fallback bubble
-                    this.ctx.fillStyle = "#f5e6c8"
-                    this.ctx.beginPath()
-                    this.ctx.ellipse(npc.def.x, bubbleY + bubbleHeight / 2, bubbleWidth / 2, bubbleHeight / 2, 0, 0, Math.PI * 2)
-                    this.ctx.fill()
-                    this.ctx.strokeStyle = "#8b7355"
-                    this.ctx.lineWidth = 2
-                    this.ctx.stroke()
-                    this.ctx.fillStyle = "#4a3520"
-                    this.ctx.font = "bold 18px serif"
-                    this.ctx.textAlign = "center"
-                    this.ctx.fillText("...", npc.def.x, bubbleY + bubbleHeight / 2 + 6)
-                }
-            }
+            //     if (bubbleImg) {
+            //         this.ctx.drawImage(bubbleImg, bubbleX, bubbleY, bubbleWidth, bubbleHeight)
+            //         // Draw "..." text inside bubble
+            //         this.ctx.fillStyle = "#4a3520"
+            //         this.ctx.font = "bold 18px serif"
+            //         this.ctx.textAlign = "center"
+            //         this.ctx.fillText("...", npc.def.x, bubbleY + bubbleHeight / 2 + 4)
+            //     } else {
+            //         // Fallback bubble
+            //         this.ctx.fillStyle = "#f5e6c8"
+            //         this.ctx.beginPath()
+            //         this.ctx.ellipse(npc.def.x, bubbleY + bubbleHeight / 2, bubbleWidth / 2, bubbleHeight / 2, 0, 0, Math.PI * 2)
+            //         this.ctx.fill()
+            //         this.ctx.strokeStyle = "#8b7355"
+            //         this.ctx.lineWidth = 2
+            //         this.ctx.stroke()
+            //         this.ctx.fillStyle = "#4a3520"
+            //         this.ctx.font = "bold 18px serif"
+            //         this.ctx.textAlign = "center"
+            //         this.ctx.fillText("...", npc.def.x, bubbleY + bubbleHeight / 2 + 6)
+            //     }
+            // }
 
             // Name tag
             this.ctx.fillStyle = "white"
@@ -117,6 +120,28 @@ export class Renderer {
         }
 
         this.ctx.restore()
+    }
+
+    // Draw farm labels on the background (top-left farm area)
+    private drawFarmLabels() {
+        const farmLabels = [
+            { name: "Brazil Farm", x: 96, y: 120 },
+            { name: "Colombia Farm", x: 96, y: 180 },
+            { name: "Vietnam Farm", x: 96, y: 240 },
+        ]
+
+        farmLabels.forEach(farm => {
+            // Background for text readability
+            this.ctx.fillStyle = "rgba(0, 0, 0, 0.6)"
+            this.ctx.fillRect(farm.x - 50, farm.y - 12, 100, 24)
+            
+            // Text
+            this.ctx.fillStyle = "#f5e6c8"
+            this.ctx.font = "bold 14px sans-serif"
+            this.ctx.textAlign = "center"
+            this.ctx.textBaseline = "middle"
+            this.ctx.fillText(farm.name, farm.x, farm.y)
+        })
     }
 
     // Debug helper: draw collision grid overlay

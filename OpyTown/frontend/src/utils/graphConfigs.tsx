@@ -4,7 +4,7 @@
  **/
 
 import { TiWeatherCloudy } from "react-icons/ti"
-import { Truck, Calculator } from "lucide-react"
+import { Truck, Calculator, Database, Brain } from "lucide-react"
 import { Node, Edge } from "@xyflow/react"
 import supervisorIcon from "@/assets/supervisor.png"
 import farmAgentIcon from "@/assets/Grader-Agent.png"
@@ -376,12 +376,30 @@ const GROUP_COMMUNICATION_CONFIG: GraphConfig = {
         ),
         label1: "Accountant",
         label2: "Accountant Agent",
-        handles: HANDLE_TYPES.TARGET,
+        handles: HANDLE_TYPES.ALL,
         agentName: "Accountant Logistics",
         githubLink: `${urlsConfig.github.baseUrl}${urlsConfig.github.agents.logisticAccountant}`,
         agentDirectoryLink: `${urlsConfig.agentDirectory.baseUrl}/`,
       },
       position: { x: 500, y: 500 },
+      parentId: NODE_IDS.LOGISTICS_GROUP,
+      extent: "parent",
+    },
+    {
+      id: NODE_IDS.SHARED_MEMORY,
+      type: NODE_TYPES.CUSTOM,
+      data: {
+        icon: (
+          <Database className="dark-icon h-4 w-4 object-contain opacity-100" />
+        ),
+        label1: "Shared Memory",
+        label2: "Semantic Translation Bus",
+        handles: HANDLE_TYPES.ALL,
+        verificationStatus: VERIFICATION_STATUS.VERIFIED,
+        githubLink: `${urlsConfig.github.appSdkBaseUrl}${urlsConfig.github.transports.group}`,
+        agentDirectoryLink: urlsConfig.agentDirectory.baseUrl,
+      },
+      position: { x: 380, y: 400 },
       parentId: NODE_IDS.LOGISTICS_GROUP,
       extent: "parent",
     },
@@ -420,6 +438,39 @@ const GROUP_COMMUNICATION_CONFIG: GraphConfig = {
       data: { label: EDGE_LABELS.A2A },
       type: EDGE_TYPES.CUSTOM,
     },
+    // Shared Memory connections - bidirectional for read/write
+    {
+      id: EDGE_IDS.SUPERVISOR_TO_MEMORY,
+      source: NODE_IDS.AUCTION_AGENT,
+      target: NODE_IDS.SHARED_MEMORY,
+      targetHandle: "top",
+      data: { label: "Write/Read" },
+      type: EDGE_TYPES.CUSTOM,
+    },
+    {
+      id: EDGE_IDS.FARM_TO_MEMORY,
+      source: NODE_IDS.BRAZIL_FARM,
+      target: NODE_IDS.SHARED_MEMORY,
+      targetHandle: "top_left",
+      data: { label: "Write/Read" },
+      type: EDGE_TYPES.CUSTOM,
+    },
+    {
+      id: EDGE_IDS.SHIPPER_TO_MEMORY,
+      source: NODE_IDS.COLOMBIA_FARM,
+      target: NODE_IDS.SHARED_MEMORY,
+      targetHandle: "bottom_left",
+      data: { label: "Write/Read" },
+      type: EDGE_TYPES.CUSTOM,
+    },
+    {
+      id: EDGE_IDS.ACCOUNTANT_TO_MEMORY,
+      source: NODE_IDS.VIETNAM_FARM,
+      target: NODE_IDS.SHARED_MEMORY,
+      targetHandle: "bottom_right",
+      data: { label: "Write/Read" },
+      type: EDGE_TYPES.CUSTOM,
+    },
   ],
   animationSequence: [
     { ids: [NODE_IDS.AUCTION_AGENT] },
@@ -435,6 +486,16 @@ const GROUP_COMMUNICATION_CONFIG: GraphConfig = {
         NODE_IDS.VIETNAM_FARM,
       ],
     },
+    // Shared Memory operations - agents write/read from shared memory
+    {
+      ids: [
+        EDGE_IDS.SUPERVISOR_TO_MEMORY,
+        EDGE_IDS.FARM_TO_MEMORY,
+        EDGE_IDS.SHIPPER_TO_MEMORY,
+        EDGE_IDS.ACCOUNTANT_TO_MEMORY,
+      ],
+    },
+    { ids: [NODE_IDS.SHARED_MEMORY] },
     { ids: [NODE_IDS.BRAZIL_FARM] },
     { ids: [NODE_IDS.COLOMBIA_FARM] },
     { ids: [NODE_IDS.VIETNAM_FARM] },

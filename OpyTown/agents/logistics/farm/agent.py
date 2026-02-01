@@ -8,6 +8,8 @@ from langgraph.graph import MessagesState
 from langgraph.graph import StateGraph, END
 from ioa_observe.sdk.decorators import agent, graph
 from common.logistics_states import LogisticsStatus, extract_status, build_transition_message, ensure_order_id
+from services.shared_memory import get_shared_memory
+from services.semantic_translator import get_semantic_translator
 
 logger = logging.getLogger("lungo.farm_agent.agent")
 
@@ -35,6 +37,8 @@ class FarmAgent:
         - HANDOVER_TO_SHIPPER -> CUSTOMS_CLEARANCE
         - PAYMENT_COMPLETE -> DELIVERED
         """
+        self.shared_memory = get_shared_memory()
+        self.semantic_translator = get_semantic_translator()
         self.app = self._build_graph()
 
     # --- Node Definition ---
@@ -52,6 +56,33 @@ class FarmAgent:
 
         if status is LogisticsStatus.RECEIVED_ORDER:
             next_status = LogisticsStatus.HANDOVER_TO_SHIPPER
+            
+            # Write to shared memory
+            self.shared_memory.update_order_state(
+                order_id=order_id,
+                state=next_status.value,
+                agent_id="farm_agent",
+                metadata={
+                    "sender": "Tatooine Farm",
+                    "receiver": "Shipper",
+                    "details": "Prepared shipment and documentation",
+                }
+            )
+            
+            # Store message in shared memory for semantic translation
+            self.shared_memory.write(
+                key=f"message_{order_id}",
+                value={
+                    "order_id": order_id,
+                    "sender": "Tatooine Farm",
+                    "receiver": "Shipper",
+                    "state": next_status.value,
+                    "message": raw,
+                },
+                agent_id="farm_agent",
+                semantic_tags=["order", "shipment", "handover", "logistics"],
+            )
+            
             msg = build_transition_message(
                 order_id=order_id,
                 sender="Tatooine Farm",
