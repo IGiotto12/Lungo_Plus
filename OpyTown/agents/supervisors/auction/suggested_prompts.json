@@ -1,0 +1,42 @@
+{
+  "buyer": [
+    {
+      "prompt": "I want to order 200 lbs at $0.50/lb. Check all farms and pick the best one.",
+      "description": "Uses broadcast communication to identify farms with sufficient inventory."
+    },
+    {
+      "prompt": "I want to order 150 lbs at $0.52/lb. Check all farms and pick the best one.",
+      "description": "Uses broadcast communication to query all farms for their availability."
+    }
+  ],
+  "scout": [
+    {
+      "prompt": "I want to order 75 lbs at $0.48/lb. Check all farms and pick the best one.",
+      "description": "Shows Scout Agent parallel probing with automatic retry mechanism"
+    },
+    {
+      "prompt": "I want to order 100 lbs at $0.55/lb. Check all farms and pick the best one.",
+      "description": "Demonstrates Scout Agent with automatic timeout escalation (2s -> 5s -> 10s)"
+    }
+  ],
+  "streaming_prompts": [
+    {
+      "prompt": "I want to order 200 lbs at $0.50/lb. Check all farms and pick the best one.",
+      "description": "Shows Scout Agent and Market Agent with streaming - streams responses as they arrive with automatic retry mechanism"
+    },
+    {
+      "prompt": "I want to order 150 lbs at $0.52/lb. Check all farms and pick the best one.",
+      "description": "Demonstrates streaming with Scout Agent parallel probing and Market Agent analysis (streams chunks progressively)"
+    }
+  ],
+  "market_auction": [
+    {
+      "prompt": "I want to order 200 lbs at $0.50/lb. Check all farms and pick the best one.",
+      "description": "Shows Market Agent scoring analysis with performance metrics (only displayed when quality is USABLE)"
+    },
+    {
+      "prompt": "I want to order 150 lbs at $0.50/lb. Check all farms and pick the best one.",
+      "description": "Demonstrates Market Agent weighted scoring (price 40%, delivery 25%, quality 20%, performance 15%)"
+    }
+  ]
+}
