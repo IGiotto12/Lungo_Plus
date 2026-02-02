@@ -231,23 +231,39 @@ const GameView: React.FC<GameViewProps> = ({
                 style={{ imageRendering: "pixelated", display: "block" }}
             />
             {/* UI Overlay Layer */}
-            <div className="absolute top-4 left-4 text-white pointer-events-none opacity-70 font-mono text-sm bg-black/50 p-2 rounded">
-                <p>WASD: Move</p>
-                <p>E: Interact (near NPC)</p>
-                <p>T: Talk to Buyer</p>
-                <p>Esc: Close</p>
+            <div className="absolute top-6 left-6 pointer-events-none p-4 rounded-xl bg-gray-900/60 backdrop-blur-md border border-white/10 shadow-2xl">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Controls</h3>
+                <div className="space-y-2 text-sm font-medium text-gray-200">
+                    <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                            <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">W</span>
+                            <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">A</span>
+                            <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">S</span>
+                            <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">D</span>
+                        </div>
+                        <span className="text-gray-400 text-xs uppercase tracking-wide">Move</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">E</span>
+                        <span className="text-gray-400 text-xs uppercase tracking-wide">Interact</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="w-6 h-6 flex items-center justify-center rounded bg-white/10 border border-white/20 font-mono text-xs">T</span>
+                        <span className="text-gray-400 text-xs uppercase tracking-wide">Talk to Buyer</span>
+                    </div>
+                </div>
             </div>
 
             {/* Interaction Hint */}
             {nearbyNPC && !isInteracting && (
                 <div
-                    className="absolute text-white bg-black/80 px-3 py-2 rounded border border-green-500/50 transform -translate-x-1/2 pointer-events-none text-sm font-mono shadow-lg"
-                    style={{
-                        left: "50%",
-                        bottom: "15%"
-                    }}
+                    className="absolute left-1/2 bottom-32 -translate-x-1/2 pointer-events-none flex flex-col items-center gap-2 animate-bounce-slight"
                 >
-                    Press <span className="text-green-400 font-bold">E</span> to talk to {nearbyNPC.def.name}
+                    <div className="bg-black/80 backdrop-blur-sm px-4 py-2 rounded-full border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)] flex items-center gap-2">
+                        <span className="w-5 h-5 flex items-center justify-center rounded bg-green-500 text-black font-bold font-mono text-xs shadow-sm">E</span>
+                        <span className="text-green-100 text-sm font-medium tracking-wide">Talk to <span className="text-green-400">{nearbyNPC.def.name}</span></span>
+                    </div>
+                    <div className="w-0 h-0 border-l-[6px] border-l-transparent border-t-[8px] border-t-green-500/50 border-r-[6px] border-r-transparent"></div>
                 </div>
             )}
 

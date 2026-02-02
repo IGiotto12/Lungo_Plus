@@ -193,79 +193,98 @@ export const InWorldUI: React.FC<InWorldUIProps> = ({ npc, onClose }) => {
         (npc.def.pattern === PATTERNS.PUBLISH_SUBSCRIBE_STREAMING && auctionStatus === "streaming")
 
     return (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 z-50">
-            <div className="bg-gray-900 w-full max-w-lg rounded-lg border border-gray-700 shadow-2xl flex flex-col max-h-[85vh]">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 p-4 animate-fade-in">
+            <div className="bg-gray-900/80 backdrop-blur-xl w-full max-w-2xl rounded-2xl border border-white/10 shadow-2xl flex flex-col h-[80vh] overflow-hidden ring-1 ring-white/5">
                 {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b border-gray-700">
-                    <div>
-                        <h2 className="text-xl font-bold font-mono text-green-400">{npc.def.name}</h2>
-                        <span className="text-xs text-gray-500">{getPatternDisplayName(npc.def.pattern)}</span>
+                <div className="flex justify-between items-center px-6 py-4 border-b border-white/5 bg-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            {npc.def.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-white leading-tight">{npc.def.name}</h2>
+                            <span className="text-xs font-medium text-green-400 uppercase tracking-wider">{getPatternDisplayName(npc.def.pattern)}</span>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white px-2 text-xl"
+                        className="text-gray-400 hover:text-white hover:bg-white/10 rounded-full p-2 transition-all duration-200"
                     >
-                        ✕
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
 
-                {/* Suggested Prompts */}
+                {/* Suggested Prompts Header - appearing when relevant */}
                 {showPrompts && messages.length === 0 && (
-                    <div className="p-3 border-b border-gray-700 bg-gray-800/50">
-                        <p className="text-xs text-gray-400 mb-2 font-mono">Suggested Prompts:</p>
+                    <div className="px-6 py-3 bg-gray-800/30 border-b border-white/5">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Suggested Topics</p>
+                        </div>
                         {isLoadingPrompts ? (
-                            <div className="text-gray-500 text-xs animate-pulse">Loading prompts...</div>
+                            <div className="flex gap-2">
+                                <div className="h-8 w-24 bg-white/5 rounded animate-pulse"></div>
+                                <div className="h-8 w-32 bg-white/5 rounded animate-pulse"></div>
+                                <div className="h-8 w-20 bg-white/5 rounded animate-pulse"></div>
+                            </div>
                         ) : suggestedPrompts.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                                 {suggestedPrompts.map((prompt, i) => (
                                     <button
                                         key={i}
                                         onClick={() => handleSend(prompt.prompt)}
-                                        className="text-xs bg-green-900/40 hover:bg-green-800/60 text-green-300 px-2 py-1 rounded border border-green-700/50 transition-colors font-mono truncate max-w-[200px]"
+                                        className="text-xs font-medium bg-white/5 hover:bg-green-500/20 hover:text-green-300 hover:border-green-500/30 text-gray-300 px-3 py-1.5 rounded-full border border-white/10 transition-all duration-200 truncate max-w-[250px]"
                                         title={prompt.prompt}
                                     >
-                                        {prompt.prompt.length > 30 ? prompt.prompt.slice(0, 30) + "..." : prompt.prompt}
+                                        {prompt.prompt}
                                     </button>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-gray-500 text-xs">No prompts available</div>
+                            <div className="text-gray-500 text-xs italic">No suggestions available</div>
                         )}
                     </div>
                 )}
 
                 {/* Chat Area */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[200px]" ref={scrollRef}>
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent" ref={scrollRef}>
                     {messages.length === 0 && (
-                        <div className="text-gray-500 text-sm font-mono italic text-center mt-10">
-                            Start a conversation with {npc.def.name}...
+                        <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-4 opacity-60">
+                            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+                                <span className="text-3xl">💬</span>
+                            </div>
+                            <p className="text-sm font-medium">Start a conversation with {npc.def.name}...</p>
                         </div>
                     )}
                     {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                            <div className={`max-w-[85%] rounded px-3 py-2 text-sm font-mono whitespace-pre-wrap ${msg.role === "user"
-                                ? "bg-green-900/50 text-green-100 border border-green-700"
-                                : "bg-gray-800 text-gray-200 border border-gray-700"
+                        <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-slide-up`}>
+                            <div className={`max-w-[80%] rounded-2xl px-5 py-3 text-sm leading-relaxed shadow-md ${msg.role === "user"
+                                ? "bg-gradient-to-br from-green-600 to-emerald-700 text-white rounded-br-none"
+                                : "bg-gray-800 text-gray-100 border border-white/5 rounded-bl-none"
                                 }`}>
                                 {msg.content}
                             </div>
                         </div>
                     ))}
                     {isLoading && (
-                        <div className="flex items-center gap-2 text-green-500 text-xs font-mono">
-                            <span className="animate-pulse">●</span>
-                            <span>Agent is processing...</span>
+                        <div className="flex justify-start">
+                            <div className="bg-gray-800 border border-white/5 rounded-2xl rounded-bl-none px-4 py-3 flex items-center gap-1.5 shadow-md">
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </div>
                         </div>
                     )}
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 border-t border-gray-700 bg-gray-900/50 rounded-b-lg">
-                    <div className="flex gap-2">
+                <div className="p-4 bg-gray-900/90 border-t border-white/10 backdrop-blur">
+                    <div className="flex gap-3 relative">
                         <input
                             type="text"
-                            className="flex-1 bg-black/40 border border-gray-600 rounded px-3 py-2 text-white focus:outline-none focus:border-green-500 text-sm font-mono placeholder-gray-600"
-                            placeholder="Type your message..."
+                            className="flex-1 bg-black/40 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 text-sm placeholder-gray-500 transition-all shadow-inner"
+                            placeholder={`Message ${npc.def.name}...`}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
@@ -273,18 +292,17 @@ export const InWorldUI: React.FC<InWorldUIProps> = ({ npc, onClose }) => {
                             autoFocus
                         />
                         <button
-                            className={`px-4 py-2 rounded text-sm font-bold transition-colors ${isLoading || !input.trim()
-                                ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                                : "bg-green-600 hover:bg-green-700 text-white"
+                            className={`absolute right-2 top-1.5 bottom-1.5 px-4 rounded-lg text-sm font-bold transition-all duration-200 flex items-center justify-center ${isLoading || !input.trim()
+                                ? "text-gray-600 cursor-not-allowed bg-transparent"
+                                : "bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20"
                                 }`}
                             onClick={() => handleSend()}
                             disabled={isLoading || !input.trim()}
                         >
-                            Send
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform rotate-90" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                            </svg>
                         </button>
-                    </div>
-                    <div className="text-right text-[10px] text-gray-600 mt-1 font-mono">
-                        Press Esc to close
                     </div>
                 </div>
             </div>
