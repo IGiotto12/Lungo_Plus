@@ -26,6 +26,12 @@ Teams can start at any challenge level based on their experience, from basic age
 
 OpyTown is an **interactive multi-agent system** that combines the power of AGNTCY's infrastructure with an engaging game-based visualization interface. It demonstrates how autonomous agents can communicate, coordinate, and collaborate in real-time within a virtual town environment.
 
+### Preview of agentic workflow
+
+The following diagram shows how agents (Buyer, Coffee Farm, Shipper, Accountant) communicate via the **Transport: SLIM** and **Shared Memory (Semantic Translation Bus)** in an A2A SLIM pattern—e.g. for Order Fulfilment or Coffee Buying conversations.
+
+![Preview of agentic workflow](OpyTown/images/Agentic_flow.png)
+
 ### Key Features
 
 #### 🎮 Interactive Game-Based UI
