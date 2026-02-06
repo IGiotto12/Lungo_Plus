@@ -1,4 +1,4 @@
-# OpyTown
+# Lungo+ (Opytown)
 
 🏆 **SanD Hackathon 2026 Award Winner**
 
@@ -6,7 +6,7 @@
 
 ### AGNTCY Track — Multi-Agent Systems Challenge
 
-OpyTown was developed as part of the **🤖 AGNTCY Track — Multi-Agent Systems Challenge**, which introduces participants to multi-agent systems (MAS) using [AGNTCY](https://github.com/agntcy), an open-source project initiated at **Cisco** that is building foundational infrastructure for the **Internet of Agents**.
+Lungo+ was developed as part of the **🤖 AGNTCY Track — Multi-Agent Systems Challenge**, which introduces participants to multi-agent systems (MAS) using [AGNTCY](https://github.com/agntcy), an open-source project initiated at **Cisco** that is building foundational infrastructure for the **Internet of Agents**.
 
 The challenge provides teams with the opportunity to explore and build upon AGNTCY's core components, including:
 
@@ -22,9 +22,9 @@ Teams can start at any challenge level based on their experience, from basic age
 
 🏆 **This project was awarded at the SanD Hackathon 2026**, recognizing its innovative approach to building a production-ready multi-agent system with comprehensive observability, flexible deployment options, and real-world applicability.
 
-## What is OpyTown?
+## What is Lungo+?
 
-OpyTown is an **interactive multi-agent system** that combines the power of AGNTCY's infrastructure with an engaging game-based visualization interface. It demonstrates how autonomous agents can communicate, coordinate, and collaborate in real-time within a virtual town environment.
+Lungo+ is an **interactive multi-agent system** that combines the power of AGNTCY's infrastructure with an engaging game-based visualization interface. It demonstrates how autonomous agents can communicate, coordinate, and collaborate in real-time within a virtual town environment.
 
 ### Preview of agentic workflow
 
